@@ -1,0 +1,5 @@
+#!/bin/sh
+# Development: build the CSS, then compile and run the app (restart the container after Rust changes).
+set -e
+tailwindcss -i assets/app.tailwind.css -o static/css/app.css
+exec cargo run

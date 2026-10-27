@@ -1,0 +1,26 @@
+# Production image: minified CSS and the release binary (templates compiled in) on a minimal Debian.
+FROM python:3.12-slim AS css
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL -o /usr/local/bin/tailwindcss \
+       https://github.com/tailwindlabs/tailwindcss/releases/download/v4.3.3/tailwindcss-linux-x64 \
+    && chmod +x /usr/local/bin/tailwindcss
+WORKDIR /src
+COPY assets ./assets
+COPY templates ./templates
+RUN tailwindcss -i assets/app.tailwind.css -o static/css/app.css --minify
+
+FROM rust:1-slim-bookworm AS build
+WORKDIR /src
+COPY . .
+RUN cargo build --release --bin controlfinan
+
+FROM debian:bookworm-slim
+RUN useradd -r -u 10001 app
+WORKDIR /app
+COPY --from=build /src/target/release/controlfinan /app/controlfinan
+COPY static /app/static
+COPY --from=css /src/static/css/app.css /app/static/css/app.css
+USER app
+ENV STATIC_DIR=/app/static
+EXPOSE 8000
+ENTRYPOINT ["/app/controlfinan"]

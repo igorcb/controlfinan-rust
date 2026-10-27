@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %}Conta Corrente{% endblock %}
+{% block content %}
+<div class="mb-4 flex items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold">Conta Corrente</h1>
+    <p class="mt-1 text-sm text-slate-600">{% if date_label.is_empty() %}Saldo total{% else %}Saldo do dia {{ date_label }}{% endif %}</p>
+    <p class="text-2xl font-bold {{ balance_class }}">{{ balance_text }}</p>
+  </div>
+
+  <a class="btn-primary hidden sm:inline-flex" href="/current_accounts/new">Novo lançamento</a>
+</div>
+
+<form class="mb-4 flex items-end gap-2" action="/current_accounts" accept-charset="UTF-8" method="get">
+  <div class="min-w-0 flex-1 sm:flex-none">
+    <label class="label" for="date">Consultar saldo do dia</label>
+    <input class="input" type="date" value="{{ date_value }}" name="date" id="date">
+  </div>
+  <input type="submit" value="Consultar" class="btn-secondary">
+  {% if !date_label.is_empty() %}<a class="btn-secondary" href="/current_accounts">Limpar</a>{% endif %}
+</form>
+
+{% if entries.is_empty() %}
+  <p class="card text-center text-sm text-slate-500">Nenhum lançamento encontrado.</p>
+{% else %}
+  <ul class="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm sm:hidden">
+    {% for e in entries %}
+      <li>
+        <a class="flex items-center justify-between gap-3 px-4 py-3 active:bg-slate-50" href="/current_accounts/{{ e.id_text() }}">
+          <div class="min-w-0">
+            <p class="truncate font-medium">{{ e.name_cost() }}</p>
+            <p class="truncate text-xs text-slate-500">
+              {{ e.day_month() }} · {{ e.name_account() }}{% if !e.historic_text().is_empty() %} · {{ e.historic_text() }}{% endif %}
+            </p>
+          </div>
+          <span class="shrink-0 font-semibold {{ e.color() }}">
+            {{ e.signed_currency() }}
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <div class="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm sm:block">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3">Data</th>
+          <th class="px-4 py-3">Conta</th>
+          <th class="px-4 py-3">Categoria</th>
+          <th class="px-4 py-3">Histórico</th>
+          <th class="px-4 py-3 text-right">Valor</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for e in entries %}
+          <tr id="current_account_{{ e.id_text() }}" class="hover:bg-slate-50">
+            <td class="whitespace-nowrap px-4 py-3">{{ e.date_br() }}</td>
+            <td class="px-4 py-3">{{ e.name_account() }}</td>
+            <td class="px-4 py-3">{{ e.name_cost() }}</td>
+            <td class="px-4 py-3 text-slate-600">{{ e.historic_text() }}</td>
+            <td class="whitespace-nowrap px-4 py-3 text-right font-medium {{ e.color() }}">
+              {{ e.signed_currency() }}
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-right">
+              <a class="link" href="/current_accounts/{{ e.id_text() }}">Ver</a>
+              <a class="link ml-2" href="/current_accounts/{{ e.id_text() }}/edit">Editar</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<nav class="mt-4 flex justify-between gap-3">
+  {% if page_number > 1 %}<a class="btn-secondary" href="/current_accounts?{{ date_param }}page={{ page_number - 1 }}">← Mais recentes</a>{% endif %}
+  {% if next_page %}<a class="btn-secondary ml-auto" href="/current_accounts?{{ date_param }}page={{ page_number + 1 }}">Mais antigos →</a>{% endif %}
+</nav>
+{% endblock %}

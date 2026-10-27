@@ -1,0 +1,25 @@
+<table class="min-w-full divide-y divide-slate-200 text-sm">
+  <thead class="text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+    <tr>
+      <th class="px-2 py-2 sm:px-4">{{ table.header }}</th>
+      <th class="px-2 py-2 sm:px-4 text-right">Valor</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-slate-100">
+    {% for row in table.rows %}
+      <tr>
+        <td class="px-2 py-2 sm:px-4">{{ row.label }}</td>
+        <td class="px-2 py-2 sm:px-4 text-right {{ row.class() }}">{{ row.currency() }}</td>
+      </tr>
+    {% endfor %}
+    {% if table.rows.is_empty() %}
+      <tr><td colspan="2" class="px-4 py-4 text-center text-slate-500">Nenhum lançamento no período.</td></tr>
+    {% endif %}
+  </tbody>
+  <tfoot>
+    <tr class="border-t-2 border-slate-200 font-semibold">
+      <td class="px-2 py-2 sm:px-4">{{ table.total_label }}</td>
+      <td class="px-2 py-2 sm:px-4 text-right {{ table.total.class() }}">{{ table.total.currency() }}</td>
+    </tr>
+  </tfoot>
+</table>

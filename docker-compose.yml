@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: controlfinan_rust
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgres://app:app@db:5432/controlfinan_rust
+      TEST_DATABASE_URL: postgres://app:app@db:5432/controlfinan_rust_test
+      SECRET_KEY_BASE: development-only-secret
+      BCRYPT_COST: 12
+    ports:
+      - "8005:8000"
+    volumes:
+      - .:/app
+      - cargo:/home/app/cargo
+      - target:/home/app/target
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  cargo:
+  target:

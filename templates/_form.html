@@ -1,0 +1,48 @@
+<form class="card space-y-4" action="{% if entry.persisted() %}/current_accounts/{{ entry.id_text() }}{% else %}/current_accounts{% endif %}" accept-charset="UTF-8" method="post">{% if entry.persisted() %}<input type="hidden" name="_method" value="patch" autocomplete="off">{% endif %}<input type="hidden" name="authenticity_token" value="{{ page.csrf }}" autocomplete="off">
+  {% include "_errors.html" %}
+
+  <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo">
+    <label class="flex cursor-pointer items-center justify-center rounded-md border border-slate-300 py-3 font-medium text-slate-600 has-checked:border-red-600 has-checked:bg-red-600 has-checked:text-white">
+      <input class="sr-only" type="radio" value="debito"{% if entry.type_launche == Some(-1) %} checked="checked"{% endif %} name="current_account[type_launche]" id="current_account_type_launche_debito"> Débito
+    </label>
+    <label class="flex cursor-pointer items-center justify-center rounded-md border border-slate-300 py-3 font-medium text-slate-600 has-checked:border-emerald-600 has-checked:bg-emerald-600 has-checked:text-white">
+      <input class="sr-only" type="radio" value="credito"{% if entry.type_launche == Some(1) %} checked="checked"{% endif %} name="current_account[type_launche]" id="current_account_type_launche_credito"> Crédito
+    </label>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class="label" for="current_account_price">Valor</label>
+      <input step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"{% if !entry.persisted() %} autofocus="autofocus"{% endif %} class="input text-lg font-semibold" type="number" value="{{ entry.price_field() }}" name="current_account[price]" id="current_account_price">
+    </div>
+
+    <div>
+      <label class="label" for="current_account_date_ocurrence">Data</label>
+      <input class="input" type="date" value="{{ entry.date_iso() }}" name="current_account[date_ocurrence]" id="current_account_date_ocurrence">
+    </div>
+
+    <div>
+      <label class="label" for="current_account_cost_id">Categoria</label>
+      <select class="input" name="current_account[cost_id]" id="current_account_cost_id">{% if entry.cost_id.is_none() %}<option value="">Selecione</option>{% endif %}
+        {% for option in costs %}<option{% if option.selected %} selected="selected"{% endif %} value="{{ option.id }}">{{ option.name }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="label" for="current_account_cash_account_id">Conta</label>
+      <select class="input" name="current_account[cash_account_id]" id="current_account_cash_account_id">{% if entry.cash_account_id.is_none() %}<option value="">Selecione</option>{% endif %}
+        {% for option in cash_accounts %}<option{% if option.selected %} selected="selected"{% endif %} value="{{ option.id }}">{{ option.name }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label class="label" for="current_account_historic">Histórico</label>
+      <input class="input" type="text" value="{{ entry.historic_text() }}" name="current_account[historic]" id="current_account_historic">
+    </div>
+  </div>
+
+  <div class="flex flex-col-reverse gap-3 sm:flex-row">
+    <a class="btn-secondary py-3 sm:py-2" href="{% if entry.persisted() %}/current_accounts/{{ entry.id_text() }}{% else %}/current_accounts{% endif %}">Cancelar</a>
+    <input type="submit" value="Salvar" class="btn-primary py-3 sm:order-first sm:py-2">
+  </div>
+</form>

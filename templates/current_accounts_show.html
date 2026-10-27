@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Lançamento{% endblock %}
+{% block content %}
+<h1 class="mb-6 text-2xl font-semibold">Lançamento</h1>
+
+<div class="card">
+  <dl class="grid gap-4 text-sm sm:grid-cols-2">
+    <div>
+      <dt class="text-slate-500">Data</dt>
+      <dd class="font-medium">{{ entry.date_br() }}</dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Tipo</dt>
+      <dd class="font-medium">{{ entry.type_name() }}</dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Conta</dt>
+      <dd class="font-medium">{{ entry.name_account() }}</dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Categoria</dt>
+      <dd class="font-medium">{{ entry.name_cost() }}</dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Valor</dt>
+      <dd class="font-medium {{ entry.color() }}">{{ entry.signed_currency() }}</dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Histórico</dt>
+      <dd class="font-medium">{% if entry.historic_text().is_empty() %}—{% else %}{{ entry.historic_text() }}{% endif %}</dd>
+    </div>
+  </dl>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a class="btn-primary" href="/current_accounts/{{ entry.id_text() }}/edit">Editar</a>
+    <a class="btn-secondary" href="/current_accounts">Voltar</a>
+    <form class="button_to" method="post" action="/current_accounts/{{ entry.id_text() }}" data-confirm="Excluir este lançamento?"><input type="hidden" name="_method" value="delete" autocomplete="off"><button class="btn-danger" type="submit">Excluir</button><input type="hidden" name="authenticity_token" value="{{ page.csrf }}" autocomplete="off"></form>
+  </div>
+</div>
+{% endblock %}

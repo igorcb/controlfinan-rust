@@ -1,0 +1,7 @@
+{%- if !errors.is_empty() %}
+    <div class="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
+      <ul class="list-inside list-disc">
+        {% for message in errors %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
+  {%- endif %}

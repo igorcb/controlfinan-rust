@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm">
+  <h1 class="mb-6 text-2xl font-semibold">Entrar</h1>
+
+  <form class="card space-y-4" action="/session" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="{{ page.csrf }}" autocomplete="off">
+    <div>
+      <label class="label" for="email_address">E-mail</label>
+      <input required="required" autofocus="autofocus" autocomplete="username" value="{{ email_address }}" class="input" type="email" name="email_address" id="email_address">
+    </div>
+    <div>
+      <label class="label" for="password">Senha</label>
+      <input required="required" autocomplete="current-password" maxlength="72" class="input" type="password" name="password" id="password">
+    </div>
+    <input type="submit" value="Entrar" class="btn-primary w-full">
+  </form>
+
+  <div class="mt-4 flex justify-between text-sm">
+    <a class="link" href="/registration/new">Criar conta</a>
+    <a class="link" href="/passwords/new">Esqueceu a senha?</a>
+  </div>
+</div>
+{% endblock %}
