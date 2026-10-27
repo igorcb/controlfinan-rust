@@ -89,7 +89,7 @@ tests/             testes de integração
 
 ## Benchmark
 
-O benchmark com Rails, Django, Laravel, Go, Java e Rust fica no repositório [controlfinan-rails8-hotwire](https://github.com/igorcb/controlfinan-rails8-hotwire/tree/main/benchmark).
+O benchmark com Rails, Django, Laravel, Go, Java, Rust e C# fica no repositório [controlfinan-rails8-hotwire](https://github.com/igorcb/controlfinan-rails8-hotwire/tree/main/benchmark).
 
 ## Licença
 
