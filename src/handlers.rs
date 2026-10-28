@@ -628,10 +628,14 @@ async fn edit_entry(
 }
 
 /// Copies the form fields into the entry and returns the validation messages.
+/// Like Rails' `update`, a field whose key is absent from the form keeps its stored value.
 fn assign(entry: &mut Entry, ctx: &Ctx) -> Vec<String> {
     static INTEGER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^-?\d+$").unwrap());
-    let integer = |name: &str| {
-        let value = ctx.field(&format!("current_account[{name}]"));
+    let field = |name: &str| {
+        let key = format!("current_account[{name}]");
+        ctx.has_field(&key).then(|| ctx.field(&key))
+    };
+    let integer = |value: String| {
         let value = value.trim();
         if INTEGER.is_match(value) {
             value.parse().ok()
@@ -639,21 +643,32 @@ fn assign(entry: &mut Entry, ctx: &Ctx) -> Vec<String> {
             None
         }
     };
-    entry.cash_account_id = integer("cash_account_id");
-    entry.cost_id = integer("cost_id");
-    entry.type_launche = match ctx.field("current_account[type_launche]").as_str() {
-        "debito" => Some(DEBIT),
-        "credito" => Some(CREDIT),
-        _ => None,
-    };
-    entry.date_ocurrence = parse_date(&ctx.field("current_account[date_ocurrence]"));
-    entry.price_text = ctx.field("current_account[price]").trim().to_string();
-    entry.price = Decimal::from_str(&entry.price_text)
-        .or_else(|_| Decimal::from_scientific(&entry.price_text))
-        .ok()
-        .map(|price| price.round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero));
-    let historic = ctx.field("current_account[historic]");
-    entry.historic = (!historic.is_empty()).then_some(historic);
+    if let Some(value) = field("cash_account_id") {
+        entry.cash_account_id = integer(value);
+    }
+    if let Some(value) = field("cost_id") {
+        entry.cost_id = integer(value);
+    }
+    if let Some(value) = field("type_launche") {
+        entry.type_launche = match value.as_str() {
+            "debito" => Some(DEBIT),
+            "credito" => Some(CREDIT),
+            _ => None,
+        };
+    }
+    if let Some(value) = field("date_ocurrence") {
+        entry.date_ocurrence = parse_date(&value);
+    }
+    if let Some(value) = field("price") {
+        entry.price_text = value.trim().to_string();
+        entry.price = Decimal::from_str(&entry.price_text)
+            .or_else(|_| Decimal::from_scientific(&entry.price_text))
+            .ok()
+            .map(|price| price.round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero));
+    }
+    if let Some(historic) = field("historic") {
+        entry.historic = (!historic.is_empty()).then_some(historic);
+    }
     entry.validate()
 }
 
