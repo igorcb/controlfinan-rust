@@ -832,3 +832,84 @@ async fn dashboard_shows_the_balances_navigates_and_falls_back_to_the_current_mo
         &["Março de 2026"],
     );
 }
+
+#[tokio::test]
+async fn update_keeps_the_fields_absent_from_the_form() {
+    let t = setup().await;
+    let user = t.sign_in().await;
+    let entry = t
+        .create_entry(
+            &user,
+            "2026-10-27",
+            CREDIT,
+            6,
+            "150",
+            Some("Corridas do dia"),
+        )
+        .await;
+    let id = entry.id.unwrap();
+    let response = t
+        .post(
+            &format!("/current_accounts/{id}"),
+            &[
+                ("_method", "patch"),
+                ("current_account[type_launche]", "debito"),
+                ("current_account[price]", "20"),
+                ("current_account[date_ocurrence]", "2026-10-26"),
+                ("current_account[cash_account_id]", "5"),
+            ],
+        )
+        .await;
+    assert_eq!(response.location, format!("/current_accounts/{id}"));
+    assert_eq!(t.count(&format!("SELECT count(*) FROM current_accounts WHERE id = {id} AND historic = 'Corridas do dia' AND cost_id = 6 AND price = 20 AND type_launche = -1 AND date_ocurrence = '2026-10-26'")).await, 1);
+}
+
+#[tokio::test]
+async fn update_with_only_the_price_keeps_every_other_field() {
+    let t = setup().await;
+    let user = t.sign_in().await;
+    let entry = t
+        .create_entry(
+            &user,
+            "2026-10-27",
+            CREDIT,
+            6,
+            "150",
+            Some("Corridas do dia"),
+        )
+        .await;
+    let id = entry.id.unwrap();
+    let response = t
+        .post(
+            &format!("/current_accounts/{id}"),
+            &[("_method", "patch"), ("current_account[price]", "99.9")],
+        )
+        .await;
+    assert_eq!(response.location, format!("/current_accounts/{id}"));
+    assert_eq!(t.count(&format!("SELECT count(*) FROM current_accounts WHERE id = {id} AND historic = 'Corridas do dia' AND cost_id = 6 AND cash_account_id = 5 AND price = 99.9 AND type_launche = {CREDIT} AND date_ocurrence = '2026-10-27'")).await, 1);
+}
+
+#[tokio::test]
+async fn update_with_an_empty_required_field_still_fails_validation() {
+    let t = setup().await;
+    let user = t.sign_in().await;
+    let entry = t
+        .create_entry(&user, "2026-10-27", CREDIT, 6, "150", None)
+        .await;
+    let id = entry.id.unwrap();
+    let response = t
+        .post(
+            &format!("/current_accounts/{id}"),
+            &[("_method", "patch"), ("current_account[price]", "")],
+        )
+        .await;
+    assert_eq!(response.status, 422);
+    assert_contains(&response.body, &["Valor não pode ficar em branco"]);
+    assert_eq!(
+        t.count(&format!(
+            "SELECT count(*) FROM current_accounts WHERE id = {id} AND price = 150"
+        ))
+        .await,
+        1
+    );
+}

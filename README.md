@@ -59,7 +59,7 @@ Imagem de produção: `Dockerfile.prod`, com o binário compilado em modo releas
 
 ## Testes
 
-24 testes com `cargo test`: 3 de formatação e 21 de integração. Os de integração sobem o app numa porta aleatória e usam um cliente HTTP com cookies e um Postgres de verdade. Eles cobrem:
+27 testes com `cargo test`: 3 de formatação e 24 de integração. Os de integração sobem o app numa porta aleatória e usam um cliente HTTP com cookies e um Postgres de verdade. Eles cobrem:
 
 - Senha no formato do Rails, incluindo um hash gravado pelo próprio Rails.
 - Validações em pt-BR, saldo e resumo do mês.
